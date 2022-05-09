@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port =  process.env.PORT || 5000;
@@ -17,7 +18,18 @@ async function run(){
   try{
     await client.connect();
     const productCollection = client.db('furnitureWebsite').collection('product');
+    const addCollection = client.db('furnitureWebsite').collection('add');
+        // Auth
+    app.post('/login', async(req, res) =>{
+      const user = req.body;
+      const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn:'1d'
+      });
+      res.send({accessToken});
+    })
 
+
+    //services API
     app.get('/product', async(req, res) => {
       const query = {};
       const cursor = productCollection.find(query);
@@ -31,7 +43,14 @@ async function run(){
       const product = await productCollection.findOne(query);
       res.send(product);
     });
-    //POST
+    // POST
+    app.get('/product', async(req, res) =>{
+      const email = req.query.email;
+      const query = {email: email};
+      const cursor = productCollection.find(query);
+      const products = await cursor.toArray();
+      res.send(products);
+    })
     app.post('/product', async(req, res) =>{
       const newProduct = req.body;
       const result = await productCollection.insertOne(newProduct);
@@ -42,6 +61,12 @@ async function run(){
       const id = req.params.id;
       const query = {_id: ObjectId(id)};
       const result = await productCollection.deleteOne(query);
+      res.send(result);
+    });
+    //add collection api
+    app.post('/order', async(req, res) =>{
+      const add = req.body;
+      const result = await addCollection.insertOne(add);
       res.send(result);
     });
   }
