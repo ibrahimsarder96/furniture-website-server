@@ -71,11 +71,11 @@ async function run(){
        res.status(403).send({message: 'Forbidden access'})
      }
     })
-    // app.post('/product', async(req, res) =>{
-    //   const newProduct = req.body;
-    //   const result = await productCollection.insertOne(newProduct);
-    //   res.send(result);
-    // });
+    app.post('/product', async(req, res) =>{
+      const newProduct = req.body;
+      const result = await productCollection.insertOne(newProduct);
+      res.send(result);
+    });
     //Update Product
     app.put('/product/:id', async(req, res)=>{
       const id = req.params.id;
